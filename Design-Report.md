@@ -1,5 +1,7 @@
-# Design Report
-> Please follow the instructions in homework 3 (officially announced version on NTU COOL) to finish the report.
+# Design Report HW3
 
-## Software Design
+### Directory
+This class is equivalent to a "node" in the construction of a tree with most of the getters and setters located in this class.
 
+### File
+As its name suggest, it is meant to store the contents of the file.
