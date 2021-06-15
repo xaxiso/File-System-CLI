@@ -1,22 +1,13 @@
 public class Link {
-    private String targetName = null;
-    private String linkName = null;
-    private Directory currentDir = null;
-    private Directory directory = null;
+    private String linkName;
+    private String targetName;
+    private Directory targetDirectory;
 
-    public Link(String targetName, String linkName, Directory currentDir){
-        this.targetName = targetName;
+    public Link(String linkName, String targetName, Directory currentDir){
         this.linkName = linkName;
-        this.currentDir = currentDir;
+        this.targetName = targetName;
 
-        for(Directory dir : currentDir.getChildren()){
-            if(dir.getName().equals(targetName)){
-                this.directory = dir;
-            }
-        }
 
-        if(directory == null)
-            System.out.println("Illegal command.");
     }
 
     public String getLinkName(){
@@ -27,7 +18,10 @@ public class Link {
         return targetName;
     }
 
-    public Directory getTargetDirectory(){
-        return directory;
+    public Directory getTargetDirectory(Directory currentDir){
+        if(currentDir.findDirectory(currentDir, targetName, 0) == null)
+            return null;
+        else
+            return currentDir.findDirectory(currentDir, targetName, 0);
     }
 }

@@ -6,32 +6,24 @@ public class Directory {
     private LinkedList<Directory> children;
     private Directory parent;
     private LinkedList<File> files;
-    private Link link;
-    private boolean linkornot;
+    private Link link = null;
 
     public Directory(String name){
         this.name = name;
         this.children = new LinkedList<>();
         this.files = new LinkedList<>();
-        this.linkornot = false;
+
 
         if(name.equals("/"))
             this.parent = this;
     }
 
-    public void createLink(String targetName, String linkName, Directory currentDir){
-        link = new Link(targetName, linkName, currentDir);
-        this.linkornot = true;
+    public void createLink(String linkName, String targetName, Directory currentDir){
+        link = new Link(linkName, targetName, currentDir);
     }
 
     public Link getLink(){
         return link;
-    }
-
-    public void setLink(boolean state) { this.linkornot = state; }
-
-    public boolean isLink(){
-        return linkornot;
     }
 
     public void findKeyDirectory(Directory currentDir, String key){

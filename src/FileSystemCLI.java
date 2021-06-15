@@ -2,9 +2,12 @@
 mkdir a
 cd a
 mkdir b
+cd b
+mkdir c
+cd ..
 cd ..
 rm b
-mkdir b
+cd c
  */
 
 import java.util.Collections;
@@ -30,7 +33,7 @@ public class FileSystemCLI {
     }
 
     private void printCurrentPath() {
-         System.out.println("Current path: " + currentName);
+        System.out.println("Current path: " + currentName);
     }
 
     public void executeCommand(String command) {
@@ -40,7 +43,7 @@ public class FileSystemCLI {
             String commandName = segments[0];
             performCommand(commandName, segments);
         } catch (Exception err) {
-            System.err.println("(Debug) Error: " + err.getMessage());
+//            System.err.println("(Debug) Error: " + err.getMessage());
             System.out.println("Illegal command.");
         }
     }
@@ -75,19 +78,18 @@ public class FileSystemCLI {
     }
 
     private void changeDirectory(String directoryName) {
-        if(currentDir.findDirectory(currentDir, directoryName, 0) != null
-                && currentDir.findDirectory(currentDir, directoryName, 0).isLink()) {
+        if(currentDir.findDirectory(currentDir, directoryName, 0) != null){
+            if(currentDir.findDirectory(currentDir, directoryName, 0).getLink() != null) {
+//                System.out.println("EXIST " + currentDir.findDirectory(currentDir, "b", 0).getName());
 
-//            System.out.println("BRUH " + currentDir.findDirectory(currentDir, directoryName, 0).getLink().getTargetDirectory());
-            if(currentDir.findDirectory(currentDir, directoryName, 0).getLink().getTargetDirectory() != null) {
-//                System.out.println("wtf");
-                currentName += currentDir.findDirectory(currentDir, directoryName, 0).getLink().getTargetDirectory().getName();
-                currentDir = currentDir.findDirectory(currentDir, currentDir.findDirectory(currentDir, directoryName, 0).getLink().getTargetDirectory().getName(), 0);
-                // System.out.println("CURRENTDIR: " + currentDir.getName());
-                return;
-            }
-            else{
-                System.out.println("Illegal command.");
+                if(currentDir.findDirectory(currentDir, directoryName, 0).getLink().getTargetDirectory(currentDir) != null) {
+//                    System.out.println(currentDir.findDirectory(currentDir, directoryName, 0).getLink().getTargetDirectory(currentDir) + " " + directoryName);
+                    currentName += currentDir.findDirectory(currentDir, directoryName, 0).getLink().getTargetName();
+                    currentDir = currentDir.findDirectory(currentDir, directoryName, 0).getLink().getTargetDirectory(currentDir);
+                }
+                else
+                    System.out.println("Illegal command.");
+
                 return;
             }
         }
@@ -106,9 +108,8 @@ public class FileSystemCLI {
                 currentDir = currentDir.getParent();
             }
         } else if(!currentDir.getChildren().isEmpty() && currentDir.findDirectory(currentDir, directoryName, 0) != null){
-//                System.out.println("CD: " + currentDir.findDirectory(currentDir, directoryName, 0));
             currentDir = currentDir.findDirectory(currentDir, directoryName, 0);
-            if(currentName != "/")
+            if (currentName != "/")
                 currentName += "/";
             currentName += directoryName;
         }
@@ -155,12 +156,9 @@ public class FileSystemCLI {
         if(currentDir.findDirectory(currentDir, childName, 0) != null || currentDir.getFile(childName) != null) {
             if (currentDir.findDirectory(currentDir, childName, 0) != null) {
                 Directory currentChild = currentDir.findDirectory(currentDir, childName, 0);
-//                System.out.print(currentChild.getName() + ": ");
-                if(currentChild.isLink() == true)
-                    currentChild.setLink(false);
+//                System.out.println(currentDir.findDirectory(currentDir, childName, 0) + " " + childName);
                 currentDir.removeChild(currentChild);
-                currentChild = null;
-//                System.out.println(currentDir.findDirectory(currentDir, childName, 0));
+
             }
 
             if (currentDir.getFile(childName) != null)
@@ -169,12 +167,15 @@ public class FileSystemCLI {
         else{
             System.out.println("Illegal command.");
         }
+
     }
 
     private void concatenate(String fileName) {
-        if(currentDir.findDirectory(currentDir, fileName, 0) != null && currentDir.findDirectory(currentDir, fileName, 0).isLink()) {
-            System.out.println("/" + currentDir.findDirectory(currentDir, fileName, 0).getLink().getTargetName());
-            return;
+        if(currentDir.findDirectory(currentDir, fileName, 0) != null) {
+            if (currentDir.findDirectory(currentDir, fileName, 0).getLink() != null) {
+                System.out.println("/" + currentDir.findDirectory(currentDir, fileName, 0).getLink().getTargetDirectory(currentDir).getName());
+                return;
+            }
         }
 
         if(currentDir.getFile(fileName).getContent() == null){
@@ -201,9 +202,21 @@ public class FileSystemCLI {
     }
 
     private void link(String targetName, String linkName) {
-        Directory newNode = new Directory(linkName);
-        newNode.createLink(targetName, linkName, currentDir);
-        currentDir.addChild(newNode);
+        for(Directory i : currentDir.getChildren()){
+            if(i.getName().equals(linkName)) {
+                System.out.println("Illegal command.");
+                return;
+            }
+        }
+
+        if(currentDir.findDirectory(currentDir, targetName, 0) == null){
+            System.out.println("Illegal command.");
+            return;
+        }
+
+        Directory newLink = new Directory(linkName);
+        newLink.createLink(linkName, targetName, currentDir);
+        currentDir.addChild(newLink);
     }
 
     private void search(String keyword) {
